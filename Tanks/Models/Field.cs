@@ -16,39 +16,19 @@ namespace Tanks.Models
         private const int DefaultCountApples = 5;
         private const int DefaultObjectsSpeed = 5;
         public const int DefaultCountWalls = 5; //todo сделать рассчет
+        public const int DefaultCountRivers = 7; //todo сделать рассчет
 
+        public int GameScore { get; set; }
         public int Height { get; set; }
         public int Width { get; set; }
         public int CountEnemies { get; set; }
         public int CountApples { get; set; }
         public int ObjectsSpeed { get; set; } //todo move to obj
-        public List<Apple> Apples { get; set; }
-        public List<Enemy> Enemies { get; set; }
+        public List<Tank> Tanks { get; set; }
         public List<FieldObject> FieldObjects { get; set; }
         public List<FieldObject> Grounds { get; set; } //free cells
+        public List<FieldObject> Map { get; set; }
 
-/*        public Field(string[] args) //todo переделать по-человечески
-        {
-            try
-            {
-                if (args.Length == 5)
-                {
-                    Height = Convert.ToInt32(args[0]);
-                    Width = Convert.ToInt32(args[1]);
-                    CountEnemies = Convert.ToInt32(args[2]);
-                    CountApples = Convert.ToInt32(args[3]);
-                    ObjectsSpeed = Convert.ToInt32(args[4]);
-                }
-            }
-            catch (Exception ex)
-            {
-                Height = DefaultMapHeight;
-                Width = DefailtMapWidth;
-                CountApples = DefaultCountApples;
-                ObjectsSpeed = DefaultObjectsSpeed;
-                CountEnemies = DefaultCountEnemies;
-            }
-        }*/
         public Field(int height, int width, int apples, int enemies)
         {
             Height = height;
@@ -65,8 +45,19 @@ namespace Tanks.Models
             ObjectsSpeed = DefaultObjectsSpeed;
             CountEnemies = DefaultCountEnemies;
             FieldObjects = new List<FieldObject>();
-            Apples = new List<Apple>();
-            Enemies = new List<Enemy>();
+            Tanks = new List<Tank>();
+            Grounds = new List<FieldObject>();
+            Map = new List<FieldObject>();
+        }
+
+        public FieldObject GenerateRandomObject(FieldObjectType fieldObjectType, Random random) //TODO: перенести
+        {
+            int index = random.Next(Grounds.Count);
+            FieldObject fieldObject = Grounds[index];
+            fieldObject.ObjectType = fieldObjectType;
+            FieldObjects.Add(fieldObject);
+            Grounds.RemoveAt(index);
+            return fieldObject;
         }
     }
 }

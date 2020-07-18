@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Tanks.Models
 {
-    enum Direction
+    public enum Direction
     {
-        Right = 1,
-        Left = 2,
-        Up = 3,
-        Down = 4
+        Right,
+        Left,
+        Up,
+        Down
     }
 }

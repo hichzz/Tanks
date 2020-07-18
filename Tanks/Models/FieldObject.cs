@@ -14,11 +14,20 @@ namespace Tanks.Models
 
         public FieldObjectType ObjectType;
         public Point Position;
-        public Rectangle HitBox => new Rectangle(Position, new Size(DefaultHitBoxWidth, DefaultHitBoxHeight));
+        public virtual Rectangle HitBox => new Rectangle(Position, new Size(DefaultHitBoxWidth, DefaultHitBoxHeight));
+        public bool IsEmpty() => (ObjectType == FieldObjectType.Empty);
+        public bool IsPassable() => ((ObjectType == FieldObjectType.Apple) || (ObjectType == FieldObjectType.Ground));
+        public bool IsShootable() => ((ObjectType == FieldObjectType.Apple) || (ObjectType == FieldObjectType.Ground) || (ObjectType == FieldObjectType.River));
 
-        public FieldObject(int x, int y)
+        public FieldObject(int x, int y, FieldObjectType fieldObjectType) //TODO: переделать x y на пойнт
         {
             Position = new Point(x, y);
+            ObjectType = fieldObjectType;
+        }
+
+        public FieldObject()
+        {
+            ObjectType = FieldObjectType.Empty;
         }
 
     }

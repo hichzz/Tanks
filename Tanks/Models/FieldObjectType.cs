@@ -11,6 +11,9 @@ namespace Tanks.Models
         Apple,
         Wall,
         Ground,
-        River
+        River,
+        Kolobok,
+        Enemy,
+        Empty
     }
 }

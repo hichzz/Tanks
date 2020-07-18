@@ -30,7 +30,7 @@
         {
             this.MapPictureBox = new System.Windows.Forms.PictureBox();
             this.StartGameButton = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.GameScoreLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.MapPictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -39,6 +39,7 @@
             this.MapPictureBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.MapPictureBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.MapPictureBox.Location = new System.Drawing.Point(12, 41);
             this.MapPictureBox.Name = "MapPictureBox";
             this.MapPictureBox.Size = new System.Drawing.Size(735, 437);
@@ -47,7 +48,7 @@
             // 
             // StartGameButton
             // 
-            this.StartGameButton.Location = new System.Drawing.Point(272, 12);
+            this.StartGameButton.Location = new System.Drawing.Point(510, 12);
             this.StartGameButton.Name = "StartGameButton";
             this.StartGameButton.Size = new System.Drawing.Size(237, 23);
             this.StartGameButton.TabIndex = 1;
@@ -55,21 +56,24 @@
             this.StartGameButton.UseVisualStyleBackColor = true;
             this.StartGameButton.Click += new System.EventHandler(this.StartGameButton_Click);
             // 
-            // label1
+            // GameScoreLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(312, 793);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "label1";
+            this.GameScoreLabel.AutoSize = true;
+            this.GameScoreLabel.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.GameScoreLabel.Font = new System.Drawing.Font("Segoe Print", 15.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.GameScoreLabel.ForeColor = System.Drawing.SystemColors.MenuHighlight;
+            this.GameScoreLabel.Location = new System.Drawing.Point(12, 1);
+            this.GameScoreLabel.Name = "GameScoreLabel";
+            this.GameScoreLabel.Size = new System.Drawing.Size(172, 37);
+            this.GameScoreLabel.TabIndex = 2;
+            this.GameScoreLabel.Text = "Game Score: 0";
             // 
             // MainView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(910, 897);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.GameScoreLabel);
             this.Controls.Add(this.StartGameButton);
             this.Controls.Add(this.MapPictureBox);
             this.Name = "MainView";
@@ -83,9 +87,9 @@
 
         #endregion
 
-        private System.Windows.Forms.PictureBox MapPictureBox;
+        public System.Windows.Forms.PictureBox MapPictureBox;
         private System.Windows.Forms.Button StartGameButton;
-        private System.Windows.Forms.Label label1;
+        public System.Windows.Forms.Label GameScoreLabel;
     }
 }
 

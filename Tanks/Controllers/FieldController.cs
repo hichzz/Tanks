@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace Tanks.Controllers
 {
     class FieldController
     {
-        public Field Field; 
+        public Field Field;
         public FieldController(string[] args)
         {
             Field = new Field();
@@ -22,42 +23,52 @@ namespace Tanks.Controllers
                     Field.CountEnemies = Convert.ToInt32(args[2]);
                     Field.CountApples = Convert.ToInt32(args[3]);
                     Field.ObjectsSpeed = Convert.ToInt32(args[4]);
-                    
+                    ClearField();
+                    FillGameMap();
+
                 }
             }
             catch
-            { 
+            {
                 //сделать вывод об использовании дефолтных значений
             }
         }
 
-        public bool CanBePassed() => true; //Is Type FieldObject Wall, River
-        public bool CanBeShooted() => true; //is type river, ground, apple
-
-        //TODO: добавить проверку на свободные ячейки через Grounds
-        public List<FieldObject> GetFieldObjects()
+        private void FillGameMap()
         {
-            List<FieldObject> fieldObjects = new List<FieldObject>();
-            Random random = new Random();
-            for (int i = 0; i <= Field.DefaultCountWalls; i++)
-            {
-                //todo попробовать улучшить
-                FieldObject fieldObject;
-                do
-                {
-                    fieldObject = new FieldObject(GetRandomCoordinate(Field.Width, FieldObject.DefaultHitBoxWidth, random), GetRandomCoordinate(Field.Height, FieldObject.DefaultHitBoxHeight, random));
-                }
-                while (fieldObjects.Contains(fieldObject));
-
-                fieldObjects.Add(fieldObject);
-            }
-            return fieldObjects;
+            FillFieldObjects(FieldObjectType.Wall, Field.DefaultCountWalls);
+            FillFieldObjects(FieldObjectType.River, Field.DefaultCountRivers); //TODO: temp
+            FillFieldObjects(FieldObjectType.Apple, Field.CountApples);
         }
 
-        public int GetRandomCoordinate(int border, int hitbox, Random random)
+        private void FillFieldObjects(FieldObjectType fieldObjectType, int countObjects)
         {
-            int coordinate = random.Next(0, border - hitbox);
-            return coordinate + Math.Abs(hitbox - coordinate % hitbox);
+            Random random = new Random();
+            for (int i = 0; i < countObjects; i++)
+                Field.GenerateRandomObject(fieldObjectType, random);
+        }
+
+        public void ClearField()
+        {
+            Field.Grounds.Clear();
+            for (int x = 0; x <= Field.Width - FieldObject.DefaultHitBoxWidth; x += FieldObject.DefaultHitBoxWidth)
+                for (int y = 0; y <= Field.Height - FieldObject.DefaultHitBoxHeight; y += FieldObject.DefaultHitBoxHeight)
+                {
+                    Field.Grounds.Add(new FieldObject(x, y, FieldObjectType.Ground));
+                }
+        }
+
+        public FieldObject GetFieldObjectByHitBox(Rectangle hitBox)
+        {
+            foreach(FieldObject fieldObject in Field.FieldObjects)
+            {
+                if (fieldObject.HitBox.IntersectsWith(hitBox))
+                {
+                    return fieldObject;
+                }
+            }
+
+            return new FieldObject();
         }
     }
 }

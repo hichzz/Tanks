@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Tanks.Controllers;
@@ -15,9 +16,10 @@ namespace Tanks
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            PackmanController packmanController = new PackmanController(args);
+            MainView mainView = new MainView();
+            PackmanController packmanController = new PackmanController(args, mainView);
 
-            Application.Run(new MainView(packmanController.GetField()));
+            Application.Run(mainView);
         }
     }
 }

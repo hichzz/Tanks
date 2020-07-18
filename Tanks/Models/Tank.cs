@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Tanks.Models
 {
-    public class Enemy
+    public class Tank
     {
     }
 }

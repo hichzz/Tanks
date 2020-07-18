@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace Tanks.Models
 {
-    public class Kolobok
+    public class Kolobok : MovingObject
     {
+        
+        public Kolobok(int x, int y, FieldObjectType fieldObjectType) : base (x, y, FieldObjectType.Kolobok)
+        {
+
+        }
     }
 }
