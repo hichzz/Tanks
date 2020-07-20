@@ -19,14 +19,9 @@ namespace Tanks
             Application.SetCompatibleTextRenderingDefault(false);
             GameDirector gameDirector = new GameDirector();
 
-            FieldCreator fieldCreator = new FieldCreator();
-            Field field = fieldCreator.CreateGameMap(args);
-            FieldView fieldView = new FieldView(field);
-
             MainForm mainForm = new MainForm();
 
-            PackmanController packmanController = new PackmanController(field, mainForm, fieldView, gameDirector);
-
+            PackmanController packmanController = new PackmanController(mainForm, gameDirector, args);
             Application.Run(mainForm);
         }
     }

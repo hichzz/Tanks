@@ -50,6 +50,12 @@
     <Compile Include="Controllers\PackmanController.cs" />
     <Compile Include="GameDirector.cs" />
     <Compile Include="Models\FieldObjectType.cs" />
+    <Compile Include="Views\Report.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Report.Designer.cs">
+      <DependentUpon>Report.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\FieldView.cs" />
     <Compile Include="Views\KolobokView.cs" />
     <Compile Include="MainForm.cs">
@@ -79,6 +85,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Views\Report.resx">
+      <DependentUpon>Report.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

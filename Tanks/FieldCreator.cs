@@ -41,6 +41,7 @@ namespace Tanks.Controllers
 
         private void FillGameMap(Field field)
         {
+            field.FieldObjects.Clear();
             FillFieldObjects(FieldObjectType.Wall, Field.DefaultCountWalls, field);
             FillFieldObjects(FieldObjectType.River, Field.DefaultCountRivers, field); //TODO: temp
             FillFieldObjects(FieldObjectType.Apple, field.CountApples, field);
@@ -54,9 +55,9 @@ namespace Tanks.Controllers
         }
 
         private void InitFieldGrounds(Field field) 
-        {            
+        {
             //TODO: может пригодиться для очистки поля
-            //Field.Grounds.Clear(); 
+            field.Grounds.Clear(); 
             for (int x = 0; x <= field.Width - FieldObject.DefaultHitBoxWidth; x += FieldObject.DefaultHitBoxWidth)
                 for (int y = 0; y <= field.Height - FieldObject.DefaultHitBoxHeight; y += FieldObject.DefaultHitBoxHeight)
                 {

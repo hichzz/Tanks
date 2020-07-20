@@ -53,14 +53,18 @@ namespace Tanks.Views
             }
         }
 
-        public void UpdateField(KolobokView kolobokView, TankView tankView, PictureBox mapPictureBox, Label gameScoreLabel)
+        public void UpdateField(KolobokView kolobokView, TankView tankView, PictureBox mapPictureBox)
         {
-            gameScoreLabel.Text = $"Game Score: {field.GameScore}";
             DrawEmptyField(mapPictureBox);
             DrawFieldObjects(mapPictureBox);
             kolobokView.DrawKolobok(mapPictureBox);
             tankView.DrawTanks(mapPictureBox);
             mapPictureBox.Refresh();
+        }
+
+        public void ShowGameScore(Label gameScoreLabel)
+        {
+            gameScoreLabel.Text = $"Game Score: {field.GameScore}";
         }
     }
 }

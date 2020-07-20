@@ -11,6 +11,12 @@ namespace Tanks
 {
     public class GameDirector
     {
+        public delegate void GameOverHandler();
+        public event GameOverHandler GameOverNotify;
+
+        public delegate void GameScoreChangeHandler();
+        public event GameScoreChangeHandler GameScoreChanged;
+
         private void TryToEat(Field field, List<FieldObject> intersectsFieldObjects)
         {
             foreach (FieldObject fieldObject in intersectsFieldObjects)
@@ -27,6 +33,7 @@ namespace Tanks
             field.FieldObjects.Remove(apple);
 
             field.GameScore++;
+            GameScoreChanged();
         }
 
         private List<FieldObject> GetIntersectObjects(Field field, Rectangle hitBox)
@@ -67,6 +74,39 @@ namespace Tanks
             || point.Y + MovingObject.DefaultHitBoxHeightTanks > field.Height
             || point.Y < 0);
 
+        private void ReversTank(Tank tank)
+        {
+            switch (tank.Direction)
+            {
+                case Direction.Right:
+                    tank.Direction = Direction.Left;
+                    break;
+                case Direction.Left:
+                    tank.Direction = Direction.Right;
+                    break;
+                case Direction.Up:
+                    tank.Direction = Direction.Down;
+                    break;
+                case Direction.Down:
+                    tank.Direction = Direction.Up;
+                    break;
+            }
+        }
+
+        public void MoveTanks(Field field)
+        {
+            foreach (Tank tank in field.Tanks)
+                Move(tank, field);
+        }
+
+        public void ChangeDirectionTank(Tank tank, Random random)
+        {
+            if (random.Next(0, 9) <= 2)
+                tank.Direction = (Direction)random.Next(0, 4);
+        }
+
+
+
         public void MoveObject(MovingObject movingObject)
         {
             switch (movingObject.Direction)
@@ -86,12 +126,34 @@ namespace Tanks
             }
         }
 
+        public List<FieldObject> GetCollision(MovingObject movingObject, Field field, Rectangle nextPoint)
+        {
+            List<FieldObject> intersectsFieldObjects = GetIntersectObjects(field, nextPoint);
+
+            if (movingObject is Kolobok)
+            {
+                intersectsFieldObjects.AddRange(field.Tanks
+                    .Where(o => o.HitBox.IntersectsWith(nextPoint)));
+            }
+            else if (movingObject is Tank)
+            {
+                List<Tank> tmp = new List<Tank>();
+                tmp.AddRange(field.Tanks);
+                tmp.Remove((Tank)movingObject);
+                intersectsFieldObjects.AddRange(tmp
+                    .Where(o => o.HitBox.IntersectsWith(nextPoint)));
+            }
+
+            return intersectsFieldObjects;
+        }
+
         public bool Move(MovingObject movingObject, Field field)
         {
-
             Rectangle nextPoint = GetNextPoint(movingObject);
-            List<FieldObject> intersectsFieldObjects = GetIntersectObjects(field, nextPoint);
+            List<FieldObject> intersectsFieldObjects = GetCollision(movingObject, field, nextPoint);
+
             bool isPassable = intersectsFieldObjects.All(o => o.IsPassable());
+            bool isTankCollision = intersectsFieldObjects.Count > 0 && intersectsFieldObjects.First() is Tank;  //TODO ???
 
             if (isPassable && !IsBorder(field, nextPoint))
             {
@@ -103,6 +165,7 @@ namespace Tanks
                 }
                 else if (movingObject is Tank)
                 {
+                    MoveObject(movingObject);
                     return true;
                 }
             }
@@ -110,11 +173,16 @@ namespace Tanks
             {
                 if (movingObject is Kolobok)
                 {
+                    if (isTankCollision)
+                        GameOverNotify();
                     return false;
                 }
                 else if (movingObject is Tank)
                 {
-                    //развернуть танк TODO
+                    if (isTankCollision)
+                        ReversTank((Tank)movingObject);
+                    else
+                        ChangeDirectionTank((Tank)movingObject, new Random());
                     return true;
                 }
             }
@@ -123,11 +191,5 @@ namespace Tanks
 
             return true;
         }
-
-        public void StartGame(int speed)
-        {
-            
-        }
-
     }
 }

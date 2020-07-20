@@ -77,6 +77,7 @@
             this.Controls.Add(this.StartGameButton);
             this.Controls.Add(this.MapPictureBox);
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Tanks";
             ((System.ComponentModel.ISupportInitialize)(this.MapPictureBox)).EndInit();
             this.ResumeLayout(false);

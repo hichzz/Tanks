@@ -14,21 +14,31 @@ namespace Tanks.Controllers
 {
     public class PackmanController
     {
+        private FieldCreator fieldCreator;
         private KolobokView kolobokView;
         private TankView tankView;
         private FieldView fieldView;
         private Field field;
         public Kolobok Kolobok;
+        private string[] args;
         private MainForm mainForm;
-        private System.Windows.Forms.Timer timer;
+        private System.Windows.Forms.Timer moveTimer;
+        private System.Windows.Forms.Timer changeDirectionTimer;
+        private Report report;
+
         private GameDirector gameDirector;
-        public PackmanController(Field field, MainForm mainForm, FieldView fieldView, GameDirector gameDirector)
+        private Random random;
+        public PackmanController(MainForm mainForm, GameDirector gameDirector, string[] args)
         {
             this.gameDirector = gameDirector;
-            this.field = field;
             this.mainForm = mainForm;
-            this.fieldView = fieldView;
             this.mainForm.StartGameButton.Click += new EventHandler(StartGameButton_Click);
+            random = new Random((int)DateTime.Now.Ticks);
+            fieldCreator = new FieldCreator();
+            this.args = args;
+            report = new Report();
+            InitMoveTimer(Convert.ToInt32(args[4]));
+            InitChangeDirectionTimer();
         }
 
         private void CreateKolobok()
@@ -39,8 +49,7 @@ namespace Tanks.Controllers
         }
 
         private void CreateTanks()
-        {
-            Random random = new Random();
+        {            
             for (int i = 0; i < field.CountEnemies; i++)
             {
                 FieldObject freeCell = field.Grounds[random.Next(field.Grounds.Count)];
@@ -53,26 +62,86 @@ namespace Tanks.Controllers
         private void Timer_Tick(object sender, EventArgs e)
         {
             gameDirector.Move(Kolobok, field);
-            fieldView.UpdateField(kolobokView, tankView, mainForm.MapPictureBox, mainForm.GameScoreLabel);
+            gameDirector.MoveTanks(field);
+            fieldView.UpdateField(kolobokView, tankView, mainForm.MapPictureBox);
+            report.RefreshData(Kolobok, field);
+        }
+
+        private void TimerChangeDirection_Tick(object sender, EventArgs e)
+        {
+            foreach (Tank tank in field.Tanks)
+               gameDirector.ChangeDirectionTank(tank, random);
+        }
+
+        private void InitChangeDirectionTimer()
+        {
+            changeDirectionTimer = new System.Windows.Forms.Timer();
+            changeDirectionTimer.Interval = Tank.ChangeDirectionDelay;
+            changeDirectionTimer.Tick += new EventHandler(TimerChangeDirection_Tick);
+        }
+
+        private void InitMoveTimer(int movingSpeed)
+        {
+            moveTimer = new System.Windows.Forms.Timer();
+            moveTimer.Interval = movingSpeed;
+            moveTimer.Tick += new EventHandler(Timer_Tick);
+        }
+
+        private void StartTimers()
+        {
+            moveTimer.Start();
+            changeDirectionTimer.Start();
+        }
+
+        private void StopTimers()
+        {
+            moveTimer.Stop();
+            changeDirectionTimer.Stop();
+        }
+
+        private void GameOver()
+        {
+            StopTimers();
+            MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+            DialogResult result = MessageBox.Show("Start new game?", "Game over", buttons);
+            if (result == DialogResult.Yes)
+            {
+                report.ClearData();
+                StartGame();
+            }
+            else
+            {
+                mainForm.Close();
+            }
+        }
+
+        private void UpdateGameScore()
+        {
+            fieldView.ShowGameScore(mainForm.GameScoreLabel);
         }
 
         public void StartGameButton_Click(object sender, EventArgs e)
         {
             mainForm.KeyUp += new KeyEventHandler(ChangeDirection_KeyUp);
-            StartGame(MovingObject.DefaultSpeed);
+            StartGame();
         }
-        public void StartGame(int movingSpeed) 
+        public void StartGame()
         {
+            field = fieldCreator.CreateGameMap(args);
+            fieldView = new FieldView(field);
+
             CreateKolobok();
             CreateTanks();
 
-            fieldView.UpdateField(kolobokView, tankView, mainForm.MapPictureBox, mainForm.GameScoreLabel);
-            mainForm.MapPictureBox.Visible = true;
+            gameDirector.GameOverNotify += new GameDirector.GameOverHandler(GameOver);
+            gameDirector.GameScoreChanged += new GameDirector.GameScoreChangeHandler(UpdateGameScore);
 
-            timer = new System.Windows.Forms.Timer();
-            timer.Interval = movingSpeed;
-            timer.Tick += new EventHandler(Timer_Tick);
-            timer.Start();
+            fieldView.UpdateField(kolobokView, tankView, mainForm.MapPictureBox);
+            mainForm.MapPictureBox.Visible = true;
+            StartTimers();
+
+            report.LoadReportData(Kolobok, field);
+            mainForm.Focus();
         }
 
         public void ChangeDirection_KeyUp(object sender, KeyEventArgs e)
@@ -93,6 +162,5 @@ namespace Tanks.Controllers
                     break;
             }
         }
-
     }
 }
