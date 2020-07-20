@@ -14,46 +14,64 @@ namespace Tanks.Controllers
 {
     public class PackmanController
     {
-        private FieldController fieldController;
-        private AppleController appleController;
         private KolobokView kolobokView;
+        private TankView tankView;
+        private FieldView fieldView;
+        private Field field;
         public Kolobok Kolobok;
-        private MainView mainView;
+        private MainForm mainForm;
         private System.Windows.Forms.Timer timer;
-        public PackmanController(string[] args, MainView mainView)
+        private GameDirector gameDirector;
+        public PackmanController(Field field, MainForm mainForm, FieldView fieldView, GameDirector gameDirector)
         {
-            fieldController = new FieldController(args);
-            appleController = new AppleController(GetField());
-            this.mainView = mainView;
-            mainView.SetController(this);
-
-            CreateKolobok();
-
-            kolobokView = new KolobokView(Kolobok);
+            this.gameDirector = gameDirector;
+            this.field = field;
+            this.mainForm = mainForm;
+            this.fieldView = fieldView;
+            this.mainForm.StartGameButton.Click += new EventHandler(StartGameButton_Click);
         }
-        public Field GetField() => fieldController.Field; // TODO: remove
 
         private void CreateKolobok()
         {
-            FieldObject freeCell = GetField().Grounds.First();
+            FieldObject freeCell = field.Grounds.First();
             Kolobok = new Kolobok(freeCell.Position.X, freeCell.Position.Y, FieldObjectType.Kolobok);
-            Kolobok.Speed = Kolobok.DefaultSpeed;
+            kolobokView = new KolobokView(Kolobok);
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        private void CreateTanks()
         {
-            Move(Kolobok);
-            mainView.UpdateField(kolobokView);
+            Random random = new Random();
+            for (int i = 0; i < field.CountEnemies; i++)
+            {
+                FieldObject freeCell = field.Grounds[random.Next(field.Grounds.Count)];
+
+                field.Tanks.Add(new Tank(freeCell.Position.X, freeCell.Position.Y, FieldObjectType.Tank));                
+            }
+            tankView = new TankView(field.Tanks);
         }
 
-        public void StartGame(PictureBox map) //in game director
+        private void Timer_Tick(object sender, EventArgs e)
         {
-            //kolobokView.DrawKolobok(map);
-            //map.Refresh();
+            gameDirector.Move(Kolobok, field);
+            fieldView.UpdateField(kolobokView, tankView, mainForm.MapPictureBox, mainForm.GameScoreLabel);
+        }
+
+        public void StartGameButton_Click(object sender, EventArgs e)
+        {
+            mainForm.KeyUp += new KeyEventHandler(ChangeDirection_KeyUp);
+            StartGame(MovingObject.DefaultSpeed);
+        }
+        public void StartGame(int movingSpeed) 
+        {
+            CreateKolobok();
+            CreateTanks();
+
+            fieldView.UpdateField(kolobokView, tankView, mainForm.MapPictureBox, mainForm.GameScoreLabel);
+            mainForm.MapPictureBox.Visible = true;
 
             timer = new System.Windows.Forms.Timer();
-            timer.Interval = Kolobok.Speed;
-            timer.Tick += new EventHandler(timer_Tick);
+            timer.Interval = movingSpeed;
+            timer.Tick += new EventHandler(Timer_Tick);
             timer.Start();
         }
 
@@ -74,68 +92,7 @@ namespace Tanks.Controllers
                     Kolobok.Direction = Direction.Up;
                     break;
             }
-            if (CanMove(Kolobok))
-                timer.Start();
-        }
-        public void Move(MovingObject movingObject)
-        {
-            if (CanMove(movingObject))
-            {
-                switch (movingObject.Direction)
-                {
-                    case Direction.Right:
-                        movingObject.Position.X += MovingObject.MoveOffset;
-                        break;
-                    case Direction.Left:
-                        movingObject.Position.X -= MovingObject.MoveOffset;
-                        break;
-                    case Direction.Up:
-                        movingObject.Position.Y -= MovingObject.MoveOffset;
-                        break;
-                    case Direction.Down:
-                        movingObject.Position.Y += MovingObject.MoveOffset;
-                        break;
-                }
-            }
-            else
-                timer.Stop();
         }
 
-        private bool CanMove(MovingObject movingObject) //TODO: переименовать
-        {
-            Rectangle nextPoint = movingObject.HitBox;
-            switch (movingObject.Direction)
-            {
-                case Direction.Right:
-                    nextPoint = new Rectangle(movingObject.Position.X + MovingObject.MoveOffset, movingObject.Position.Y, movingObject.HitBox.Width, movingObject.HitBox.Height);
-                    break;
-                case Direction.Left:
-                    nextPoint = new Rectangle(movingObject.Position.X - MovingObject.MoveOffset, movingObject.Position.Y, movingObject.HitBox.Width, movingObject.HitBox.Height);
-                    break;
-                case Direction.Up:
-                    nextPoint = new Rectangle(movingObject.Position.X, movingObject.Position.Y - MovingObject.MoveOffset, movingObject.HitBox.Width, movingObject.HitBox.Height);
-                    break;
-                case Direction.Down:
-                    nextPoint = new Rectangle(movingObject.Position.X, movingObject.Position.Y + MovingObject.MoveOffset, movingObject.HitBox.Width, movingObject.HitBox.Height);
-                    break;
-            }            
-
-            foreach (FieldObject fieldObject in GetField().FieldObjects)
-            {
-                if (fieldObject.HitBox.IntersectsWith(nextPoint))
-                {
-                    if (fieldObject.IsPassable())
-                    {
-                        if (fieldObject.ObjectType == FieldObjectType.Apple)
-                            appleController.TakeApple(fieldObject); //TODO: bug, иногда срабатывает дважды
-                        return true;
-                    }
-                    else
-                        return false;
-                }
-            }
-            return true;
-        }
     }
-
 }

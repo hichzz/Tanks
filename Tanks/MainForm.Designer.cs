@@ -1,6 +1,6 @@
 ﻿namespace Tanks
 {
-    partial class MainView
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -39,12 +39,13 @@
             this.MapPictureBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.MapPictureBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.MapPictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.MapPictureBox.Location = new System.Drawing.Point(12, 41);
             this.MapPictureBox.Name = "MapPictureBox";
             this.MapPictureBox.Size = new System.Drawing.Size(735, 437);
             this.MapPictureBox.TabIndex = 0;
             this.MapPictureBox.TabStop = false;
+            this.MapPictureBox.Visible = false;
             // 
             // StartGameButton
             // 
@@ -54,7 +55,6 @@
             this.StartGameButton.TabIndex = 1;
             this.StartGameButton.Text = "Start New Game";
             this.StartGameButton.UseVisualStyleBackColor = true;
-            this.StartGameButton.Click += new System.EventHandler(this.StartGameButton_Click);
             // 
             // GameScoreLabel
             // 
@@ -68,7 +68,7 @@
             this.GameScoreLabel.TabIndex = 2;
             this.GameScoreLabel.Text = "Game Score: 0";
             // 
-            // MainView
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -76,9 +76,8 @@
             this.Controls.Add(this.GameScoreLabel);
             this.Controls.Add(this.StartGameButton);
             this.Controls.Add(this.MapPictureBox);
-            this.Name = "MainView";
+            this.Name = "MainForm";
             this.Text = "Tanks";
-            this.Load += new System.EventHandler(this.Tanks_Load);
             ((System.ComponentModel.ISupportInitialize)(this.MapPictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -88,7 +87,7 @@
         #endregion
 
         public System.Windows.Forms.PictureBox MapPictureBox;
-        private System.Windows.Forms.Button StartGameButton;
+        public System.Windows.Forms.Button StartGameButton;
         public System.Windows.Forms.Label GameScoreLabel;
     }
 }

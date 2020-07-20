@@ -50,14 +50,13 @@ namespace Tanks.Models
             Map = new List<FieldObject>();
         }
 
-        public FieldObject GenerateRandomObject(FieldObjectType fieldObjectType, Random random) //TODO: перенести
+        public void GenerateNewRandomObject(FieldObjectType fieldObjectType, Random random) //TODO?
         {
             int index = random.Next(Grounds.Count);
             FieldObject fieldObject = Grounds[index];
             fieldObject.ObjectType = fieldObjectType;
             FieldObjects.Add(fieldObject);
             Grounds.RemoveAt(index);
-            return fieldObject;
         }
     }
 }

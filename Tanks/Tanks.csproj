@@ -46,17 +46,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\AppleController.cs" />
-    <Compile Include="Controllers\FieldController.cs" />
+    <Compile Include="FieldCreator.cs" />
     <Compile Include="Controllers\PackmanController.cs" />
     <Compile Include="GameDirector.cs" />
     <Compile Include="Models\FieldObjectType.cs" />
+    <Compile Include="Views\FieldView.cs" />
     <Compile Include="Views\KolobokView.cs" />
-    <Compile Include="Views\FieldView.cs">
+    <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\FieldView.Designer.cs">
-      <DependentUpon>FieldView.cs</DependentUpon>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -66,8 +66,9 @@
     <Compile Include="Models\Field.cs" />
     <Compile Include="Models\FieldObject.cs" />
     <Compile Include="Models\MovingObject.cs" />
-    <EmbeddedResource Include="Views\FieldView.resx">
-      <DependentUpon>FieldView.cs</DependentUpon>
+    <Compile Include="Views\TankView.cs" />
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

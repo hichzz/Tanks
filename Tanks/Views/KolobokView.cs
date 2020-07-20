@@ -11,7 +11,9 @@ namespace Tanks.Views
 {
     public class KolobokView
     {
-        private Kolobok kolobok; //TODO: переделать под ресурсы
+        private Kolobok kolobok;
+        //TODO: переложить в приложение 
+        //TODO: убрать пути в файл отдельный 
         private Bitmap bitmap_up = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\kolobok_up.bmp");
         private Bitmap bitmap_down = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\kolobok_down.bmp");
         private Bitmap bitmap_left = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\kolobok_left.bmp");
@@ -40,6 +42,7 @@ namespace Tanks.Views
                     flagGraphics.DrawImage(bitmap_up, kolobok.Position);
                     break;
             }
+            //TODO: добавить дефолт или проверка на нулл
         }
     }
 }

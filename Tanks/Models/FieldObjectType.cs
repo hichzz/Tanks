@@ -13,7 +13,7 @@ namespace Tanks.Models
         Ground,
         River,
         Kolobok,
-        Enemy,
+        Tank,
         Empty
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Tanks.Controllers;
 using Tanks.Models;
+using Tanks.Views;
 
 namespace Tanks
 {
@@ -16,10 +17,17 @@ namespace Tanks
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            MainView mainView = new MainView();
-            PackmanController packmanController = new PackmanController(args, mainView);
+            GameDirector gameDirector = new GameDirector();
 
-            Application.Run(mainView);
+            FieldCreator fieldCreator = new FieldCreator();
+            Field field = fieldCreator.CreateGameMap(args);
+            FieldView fieldView = new FieldView(field);
+
+            MainForm mainForm = new MainForm();
+
+            PackmanController packmanController = new PackmanController(field, mainForm, fieldView, gameDirector);
+
+            Application.Run(mainForm);
         }
     }
 }

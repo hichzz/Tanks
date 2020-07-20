@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Tanks.Models
 {
-    public class Tank
+    public class Tank : MovingObject
     {
+        public Tank(int x, int y, FieldObjectType fieldObjectType) : base(x, y, FieldObjectType.Tank)
+        {
+
+        }
     }
 }
