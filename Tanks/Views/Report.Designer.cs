@@ -37,11 +37,16 @@
             // 
             // reportGridView
             // 
+            this.reportGridView.AllowUserToAddRows = false;
+            this.reportGridView.AllowUserToDeleteRows = false;
+            this.reportGridView.AllowUserToResizeColumns = false;
+            this.reportGridView.AllowUserToResizeRows = false;
             this.reportGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.reportGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.NameObject,
             this.X,
             this.Y});
+            this.reportGridView.Enabled = false;
             this.reportGridView.Location = new System.Drawing.Point(12, 12);
             this.reportGridView.Name = "reportGridView";
             this.reportGridView.Size = new System.Drawing.Size(431, 593);
@@ -70,6 +75,7 @@
             this.Controls.Add(this.reportGridView);
             this.Name = "Report";
             this.Text = "Report";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Report_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.reportGridView)).EndInit();
             this.ResumeLayout(false);
 

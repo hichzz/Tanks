@@ -20,6 +20,7 @@ namespace Tanks
 
         public void LoadReportData(Kolobok kolobok, Field field)
         {
+            ClearData();
             reportGridView.Rows.Add("Kolobok", kolobok.Position.X, kolobok.Position.Y);
 
             foreach (Tank tank in field.Tanks)
@@ -54,6 +55,11 @@ namespace Tanks
         public void ClearData()
         {
             reportGridView.Rows.Clear();
+        }
+
+        private void Report_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = (e.CloseReason == CloseReason.UserClosing);
         }
     }
 }
