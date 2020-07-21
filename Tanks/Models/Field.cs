@@ -55,7 +55,7 @@ namespace Tanks.Models
             HitsBullets = new List<Bullet>();
         }
 
-        public void GenerateNewRandomObject(FieldObjectType fieldObjectType, Random random) //TODO?
+        public void GenerateNewRandomObject(FieldObjectType fieldObjectType, Random random) 
         {
             int index = random.Next(Grounds.Count);
             FieldObject fieldObject = Grounds[index];

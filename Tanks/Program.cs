@@ -17,11 +17,12 @@ namespace Tanks
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            GameDirector gameDirector = new GameDirector();
 
+            GameDirector gameDirector = new GameDirector();
             MainForm mainForm = new MainForm();
 
             PackmanController packmanController = new PackmanController(mainForm, gameDirector, args);
+
             Application.Run(mainForm);
         }
     }
