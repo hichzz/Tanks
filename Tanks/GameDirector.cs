@@ -147,6 +147,10 @@ namespace Tanks
                 tmp.Remove((Tank)movingObject);
                 intersectsFieldObjects.AddRange(tmp
                     .Where(o => o.HitBox.IntersectsWith(nextPoint)));
+
+                intersectsFieldObjects.AddRange(field.Bullets
+                    .Where(o => o.HitBox.IntersectsWith(nextPoint))
+                    .Where(o => o.IsKolobokBullet));
             }
 
             return intersectsFieldObjects;
@@ -158,7 +162,7 @@ namespace Tanks
             List<FieldObject> intersectsFieldObjects = GetCollision(movingObject, field, nextPoint);
 
             bool isPassable = intersectsFieldObjects.All(o => o.IsPassable());
-            bool isTankCollision = IsGameOverCollision(intersectsFieldObjects);
+            bool isGameOverCollision = IsGameOverCollision(intersectsFieldObjects);
             bool isShootable = intersectsFieldObjects.All(o => o.IsShootable());
 
             if (isPassable && !IsBorder(field, nextPoint))
@@ -179,7 +183,7 @@ namespace Tanks
             {
                 if (movingObject is Kolobok)
                 {
-                    if (isTankCollision)
+                    if (isGameOverCollision)
                     {
                         GameOverNotify();
                     }
@@ -187,10 +191,20 @@ namespace Tanks
                 }
                 else if (movingObject is Tank)
                 {
-                    if (isTankCollision)
+                    if (isGameOverCollision)
                     {
-                        ReversTank((Tank)movingObject);
-                    }
+                        if (IsDestroyObject(intersectsFieldObjects))
+                        {
+                            Random random = new Random();
+                            int index = random.Next(field.Grounds.Count);
+                            FieldObject fieldObject = field.Grounds[index];
+                            movingObject.Position = fieldObject.Position;
+                        }
+                        else
+                        {
+                            ReversTank((Tank)movingObject);
+                        }
+                    }                    
                     else
                     {
                         ChangeDirectionTank((Tank)movingObject, new Random());
@@ -220,6 +234,25 @@ namespace Tanks
                 {
                     if (fieldObject.ObjectType == FieldObjectType.Tank || fieldObject.ObjectType == FieldObjectType.Bullet)
                         return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsDestroyObject(List<FieldObject> intersectsFieldObjects)
+        {
+            if (intersectsFieldObjects.Count > 0)
+            {
+                foreach (FieldObject fieldObject in intersectsFieldObjects)
+                {
+                    if (fieldObject.ObjectType == FieldObjectType.Bullet)
+                    {
+                        Bullet bullet = (Bullet)fieldObject;
+                        if (bullet.IsKolobokBullet)
+                            return true;
+                        else
+                            return false;
+                    }
                 }
             }
             return false;
