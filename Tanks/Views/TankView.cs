@@ -12,12 +12,11 @@ namespace Tanks.Views
     public class TankView
     {
         private List<Tank> tanks;
-        //TODO: переложить в приложение 
-        //TODO: убрать пути в файл отдельный 
-        private Bitmap bitmap_up = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\tank_up.bmp");
-        private Bitmap bitmap_down = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\tank_down.bmp");
-        private Bitmap bitmap_left = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\tank_left.bmp");
-        private Bitmap bitmap_right = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\tank_right.bmp");
+
+        private Bitmap bitmap_up = new Bitmap(Properties.Resources.tank_up);
+        private Bitmap bitmap_down = new Bitmap(Properties.Resources.tank_down);
+        private Bitmap bitmap_left = new Bitmap(Properties.Resources.tank_left);
+        private Bitmap bitmap_right = new Bitmap(Properties.Resources.tank_right);
 
         public TankView(List<Tank> tanks)
         {
@@ -45,7 +44,6 @@ namespace Tanks.Views
                         break;
                 }
             }
-            //TODO: добавить дефолт или проверка на нулл
         }
     }
 }

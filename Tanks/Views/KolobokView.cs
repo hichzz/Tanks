@@ -12,12 +12,10 @@ namespace Tanks.Views
     public class KolobokView
     {
         private Kolobok kolobok;
-        //TODO: переложить в приложение 
-        //TODO: убрать пути в файл отдельный 
-        private Bitmap bitmap_up = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\kolobok_up.bmp");
-        private Bitmap bitmap_down = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\kolobok_down.bmp");
-        private Bitmap bitmap_left = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\kolobok_left.bmp");
-        private Bitmap bitmap_right = new Bitmap("C:\\Users\\Serpiente\\source\\epam\\Tanks\\Tanks\\Tanks\\Images\\kolobok_right.bmp");
+        private Bitmap bitmap_up = new Bitmap(Properties.Resources.kolobok_up);
+        private Bitmap bitmap_down = new Bitmap(Properties.Resources.kolobok_down);
+        private Bitmap bitmap_left = new Bitmap(Properties.Resources.kolobok_left);
+        private Bitmap bitmap_right = new Bitmap(Properties.Resources.kolobok_right);
 
         public KolobokView(Kolobok kolobok)
         {

@@ -9,7 +9,7 @@ namespace Tanks.Models
 {
     public class Bullet : MovingObject
     {
-        public const int FlyDelay = 45;
+        public const int CreateBulletDelay = 83;
         public const int FlySpeed = 5;
         public const int DefaultBulletHeight = 20;
         public const int DefaultBulletWidth = 20;

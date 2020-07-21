@@ -78,7 +78,7 @@ namespace Tanks.Controllers
                 foreach (Tank tank in field.Tanks)
                     gameDirector.ChangeDirectionTank(tank, random);
 
-            if (countTimer % Bullet.FlyDelay == 0)
+            if (countTimer % Bullet.CreateBulletDelay == 0)
                 foreach (Tank tank in field.Tanks)                 
                     gameDirector.CreateBullet(tank, field);
 
