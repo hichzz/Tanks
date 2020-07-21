@@ -53,12 +53,13 @@ namespace Tanks.Views
             }
         }
 
-        public void UpdateField(KolobokView kolobokView, TankView tankView, PictureBox mapPictureBox)
+        public void UpdateField(BulletView bulletView, KolobokView kolobokView, TankView tankView, PictureBox mapPictureBox)
         {
             DrawEmptyField(mapPictureBox);
             DrawFieldObjects(mapPictureBox);
             kolobokView.DrawKolobok(mapPictureBox);
             tankView.DrawTanks(mapPictureBox);
+            bulletView.DrawBullets(mapPictureBox);
             mapPictureBox.Refresh();
         }
 

@@ -134,8 +134,13 @@ namespace Tanks
             {
                 intersectsFieldObjects.AddRange(field.Tanks
                     .Where(o => o.HitBox.IntersectsWith(nextPoint)));
+
+                intersectsFieldObjects.AddRange(field.Bullets
+                    .Where(o => o.HitBox.IntersectsWith(nextPoint))
+                    .Where(o => !o.IsKolobokBullet));
             }
-            else if (movingObject is Tank)
+
+            if (movingObject is Tank)
             {
                 List<Tank> tmp = new List<Tank>();
                 tmp.AddRange(field.Tanks);
@@ -153,7 +158,8 @@ namespace Tanks
             List<FieldObject> intersectsFieldObjects = GetCollision(movingObject, field, nextPoint);
 
             bool isPassable = intersectsFieldObjects.All(o => o.IsPassable());
-            bool isTankCollision = intersectsFieldObjects.Count > 0 && intersectsFieldObjects.First() is Tank;  //TODO ???
+            bool isTankCollision = IsGameOverCollision(intersectsFieldObjects);
+            bool isShootable = intersectsFieldObjects.All(o => o.IsShootable());
 
             if (isPassable && !IsBorder(field, nextPoint))
             {
@@ -163,7 +169,7 @@ namespace Tanks
                     TryToEat(field, intersectsFieldObjects);
                     return true;
                 }
-                else if (movingObject is Tank)
+                else if ((movingObject is Tank) || (movingObject is Bullet))
                 {
                     MoveObject(movingObject);
                     return true;
@@ -174,22 +180,94 @@ namespace Tanks
                 if (movingObject is Kolobok)
                 {
                     if (isTankCollision)
+                    {
                         GameOverNotify();
+                    }
                     return false;
                 }
                 else if (movingObject is Tank)
                 {
                     if (isTankCollision)
+                    {
                         ReversTank((Tank)movingObject);
+                    }
                     else
+                    {
                         ChangeDirectionTank((Tank)movingObject, new Random());
+                    }
                     return true;
                 }
+                else if (movingObject is Bullet)
+                {
+                    if (isShootable && !IsBorder(field, nextPoint))
+                    {
+                        MoveObject(movingObject);
+                    }
+                    else
+                    {
+                        field.HitsBullets.Add((Bullet)movingObject);
+                    }
+                }
+            }
+            return true;
+        }
+
+        private bool IsGameOverCollision(List<FieldObject> intersectsFieldObjects)
+        {
+            if (intersectsFieldObjects.Count > 0)
+            {
+                foreach (FieldObject fieldObject in intersectsFieldObjects)
+                {
+                    if (fieldObject.ObjectType == FieldObjectType.Tank || fieldObject.ObjectType == FieldObjectType.Bullet)
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        public void CreateBullet(MovingObject movingObject, Field field)
+        {
+            Bullet bullet = new Bullet();
+
+            switch (movingObject.Direction)
+            {
+                case Direction.Right:
+                    bullet.Position.X = movingObject.Position.X + MovingObject.DefaultHitBoxWidthTanks;
+                    bullet.Position.Y = movingObject.Position.Y + MovingObject.DefaultHitBoxHeightTanks / 2;
+                    break;
+                case Direction.Left:
+                    bullet.Position.X = movingObject.Position.X;
+                    bullet.Position.Y = movingObject.Position.Y + MovingObject.DefaultHitBoxHeightTanks / 2;
+                    break;
+                case Direction.Up:
+                    bullet.Position.X = movingObject.Position.X + MovingObject.DefaultHitBoxWidthTanks / 2;
+                    bullet.Position.Y = movingObject.Position.Y;
+                    break;
+                case Direction.Down:
+                    bullet.Position.X = movingObject.Position.X + MovingObject.DefaultHitBoxWidthTanks / 2;
+                    bullet.Position.Y = movingObject.Position.Y + MovingObject.DefaultHitBoxHeightTanks;
+                    break;
             }
 
-            //столкнулись танк и колобок - гейм овер TODO
+            bullet.Direction = movingObject.Direction;
 
-            return true;
+            if (movingObject.ObjectType == FieldObjectType.Tank)
+                bullet.IsKolobokBullet = false;
+            else
+                bullet.IsKolobokBullet = true;
+
+            field.Bullets.Add(bullet);
+
+        }
+
+        public void Shoot(Field field)
+        {
+            foreach (Bullet bullet in field.Bullets)
+                Move(bullet, field);
+
+            foreach (Bullet hitbullet in field.HitsBullets)
+                field.Bullets.Remove(hitbullet);
+
         }
     }
 }

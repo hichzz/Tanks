@@ -49,7 +49,9 @@
     <Compile Include="FieldCreator.cs" />
     <Compile Include="Controllers\PackmanController.cs" />
     <Compile Include="GameDirector.cs" />
+    <Compile Include="Models\Bullet.cs" />
     <Compile Include="Models\FieldObjectType.cs" />
+    <Compile Include="Views\BulletView.cs" />
     <Compile Include="Views\Report.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -28,6 +29,8 @@ namespace Tanks.Models
         public List<FieldObject> FieldObjects { get; set; }
         public List<FieldObject> Grounds { get; set; } //free cells
         public List<FieldObject> Map { get; set; }
+        public List<Bullet> Bullets { get; set; }
+        public List<Bullet> HitsBullets { get; set; }
 
         public Field(int height, int width, int apples, int enemies)
         {
@@ -48,6 +51,8 @@ namespace Tanks.Models
             Tanks = new List<Tank>();
             Grounds = new List<FieldObject>();
             Map = new List<FieldObject>();
+            Bullets = new List<Bullet>();
+            HitsBullets = new List<Bullet>();
         }
 
         public void GenerateNewRandomObject(FieldObjectType fieldObjectType, Random random) //TODO?

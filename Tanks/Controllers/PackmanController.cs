@@ -9,6 +9,7 @@ using System.Timers;
 using System.Windows.Forms;
 using Tanks.Models;
 using Tanks.Views;
+using System.Diagnostics;
 
 namespace Tanks.Controllers
 {
@@ -16,6 +17,7 @@ namespace Tanks.Controllers
     {
         private FieldCreator fieldCreator;
         private KolobokView kolobokView;
+        private BulletView bulletView;
         private TankView tankView;
         private FieldView fieldView;
         private Field field;
@@ -23,8 +25,11 @@ namespace Tanks.Controllers
         private string[] args;
         private MainForm mainForm;
         private System.Windows.Forms.Timer moveTimer;
-        private System.Windows.Forms.Timer changeDirectionTimer;
+        private System.Windows.Forms.Timer shootTimer;
         private Report report;
+        private int countTimer;
+        private KeyEventHandler keyEvent;
+        private GameDirector.GameOverHandler gameOverHandler;
 
         private GameDirector gameDirector;
         private Random random;
@@ -33,12 +38,14 @@ namespace Tanks.Controllers
             this.gameDirector = gameDirector;
             this.mainForm = mainForm;
             this.mainForm.StartGameButton.Click += new EventHandler(StartGameButton_Click);
+            gameOverHandler += new GameDirector.GameOverHandler(GameOver);
+            keyEvent += new KeyEventHandler(KeyReaction_KeyUp);
             random = new Random((int)DateTime.Now.Ticks);
             fieldCreator = new FieldCreator();
             this.args = args;
             report = new Report();
             InitMoveTimer(Convert.ToInt32(args[4]));
-            InitChangeDirectionTimer();
+            InitShootTimer(Convert.ToInt32(args[4]));
         }
 
         private void CreateKolobok()
@@ -46,6 +53,7 @@ namespace Tanks.Controllers
             FieldObject freeCell = field.Grounds.First();
             Kolobok = new Kolobok(freeCell.Position.X, freeCell.Position.Y, FieldObjectType.Kolobok);
             kolobokView = new KolobokView(Kolobok);
+            field.Grounds.RemoveAt(0);
         }
 
         private void CreateTanks()
@@ -53,7 +61,7 @@ namespace Tanks.Controllers
             for (int i = 0; i < field.CountEnemies; i++)
             {
                 FieldObject freeCell = field.Grounds[random.Next(field.Grounds.Count)];
-
+                
                 field.Tanks.Add(new Tank(freeCell.Position.X, freeCell.Position.Y, FieldObjectType.Tank));                
             }
             tankView = new TankView(field.Tanks);
@@ -61,23 +69,26 @@ namespace Tanks.Controllers
 
         private void Timer_Tick(object sender, EventArgs e)
         {
+            countTimer++;
+
             gameDirector.Move(Kolobok, field);
             gameDirector.MoveTanks(field);
-            fieldView.UpdateField(kolobokView, tankView, mainForm.MapPictureBox);
+
+            if (countTimer % Tank.ChangeDirectionDelay == 0)
+                foreach (Tank tank in field.Tanks)
+                    gameDirector.ChangeDirectionTank(tank, random);
+
+            if (countTimer % Bullet.FlyDelay == 0)
+                foreach (Tank tank in field.Tanks)                 
+                    gameDirector.CreateBullet(tank, field);
+
+            fieldView.UpdateField(bulletView, kolobokView, tankView, mainForm.MapPictureBox);
             report.RefreshData(Kolobok, field);
         }
 
-        private void TimerChangeDirection_Tick(object sender, EventArgs e)
+        private void Shoot_Tick(object sender, EventArgs e)
         {
-            foreach (Tank tank in field.Tanks)
-               gameDirector.ChangeDirectionTank(tank, random);
-        }
-
-        private void InitChangeDirectionTimer()
-        {
-            changeDirectionTimer = new System.Windows.Forms.Timer();
-            changeDirectionTimer.Interval = Tank.ChangeDirectionDelay;
-            changeDirectionTimer.Tick += new EventHandler(TimerChangeDirection_Tick);
+            gameDirector.Shoot(field);
         }
 
         private void InitMoveTimer(int movingSpeed)
@@ -87,16 +98,23 @@ namespace Tanks.Controllers
             moveTimer.Tick += new EventHandler(Timer_Tick);
         }
 
+        private void InitShootTimer(int movingSpeed)
+        {
+            shootTimer = new System.Windows.Forms.Timer();
+            shootTimer.Interval = movingSpeed;
+            shootTimer.Tick += new EventHandler(Shoot_Tick);
+        }
+
         private void StartTimers()
         {
             moveTimer.Start();
-            changeDirectionTimer.Start();
+            shootTimer.Start();
         }
 
         private void StopTimers()
         {
             moveTimer.Stop();
-            changeDirectionTimer.Stop();
+            shootTimer.Stop();
         }
 
         private void GameOver()
@@ -107,6 +125,7 @@ namespace Tanks.Controllers
             if (result == DialogResult.Yes)
             {
                 report.ClearData();
+                gameDirector.GameOverNotify -= gameOverHandler;
                 StartGame();
             }
             else
@@ -122,7 +141,7 @@ namespace Tanks.Controllers
 
         public void StartGameButton_Click(object sender, EventArgs e)
         {
-            mainForm.KeyUp += new KeyEventHandler(ChangeDirection_KeyUp);
+            mainForm.KeyUp += keyEvent;
             StartGame();
         }
         public void StartGame()
@@ -132,11 +151,12 @@ namespace Tanks.Controllers
 
             CreateKolobok();
             CreateTanks();
+            bulletView = new BulletView(field);
 
-            gameDirector.GameOverNotify += new GameDirector.GameOverHandler(GameOver);
+            gameDirector.GameOverNotify += gameOverHandler;
             gameDirector.GameScoreChanged += new GameDirector.GameScoreChangeHandler(UpdateGameScore);
 
-            fieldView.UpdateField(kolobokView, tankView, mainForm.MapPictureBox);
+            fieldView.UpdateField(bulletView, kolobokView, tankView, mainForm.MapPictureBox);
             mainForm.MapPictureBox.Visible = true;
             StartTimers();
 
@@ -144,7 +164,7 @@ namespace Tanks.Controllers
             mainForm.Focus();
         }
 
-        public void ChangeDirection_KeyUp(object sender, KeyEventArgs e)
+        public void KeyReaction_KeyUp(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
@@ -159,6 +179,9 @@ namespace Tanks.Controllers
                     break;
                 case Keys.Up:
                     Kolobok.Direction = Direction.Up;
+                    break;
+                case Keys.S:
+                    gameDirector.CreateBullet(Kolobok, field);
                     break;
             }
         }

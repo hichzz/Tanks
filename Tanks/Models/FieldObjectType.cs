@@ -14,6 +14,7 @@ namespace Tanks.Models
         River,
         Kolobok,
         Tank,
+        Bullet,
         Empty
     }
 }
