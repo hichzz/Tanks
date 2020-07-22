@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
 namespace Tanks.Models
 {
@@ -14,12 +9,19 @@ namespace Tanks.Models
 
         public FieldObjectType ObjectType;
         public Point Position;
-        public virtual Rectangle HitBox => new Rectangle(Position, new Size(DefaultHitBoxWidth, DefaultHitBoxHeight));
-        public bool IsEmpty() => (ObjectType == FieldObjectType.Empty);
-        public bool IsPassable() => ((ObjectType == FieldObjectType.Apple) || (ObjectType == FieldObjectType.Ground));
-        public bool IsShootable() => ((ObjectType == FieldObjectType.Apple) || (ObjectType == FieldObjectType.Ground) || (ObjectType == FieldObjectType.River));
+        public virtual Rectangle HitBox => 
+            new Rectangle(Position, new Size(DefaultHitBoxWidth, DefaultHitBoxHeight));
 
-        public FieldObject(int x, int y, FieldObjectType fieldObjectType) //TODO: переделать x y на пойнт
+        public bool IsPassable() => 
+            ObjectType == FieldObjectType.Apple
+            || ObjectType == FieldObjectType.Ground;
+
+        public bool IsShootable() => 
+            ObjectType == FieldObjectType.Apple 
+            || ObjectType == FieldObjectType.Ground 
+            || ObjectType == FieldObjectType.River;
+
+        public FieldObject(int x, int y, FieldObjectType fieldObjectType)
         {
             Position = new Point(x, y);
             ObjectType = fieldObjectType;

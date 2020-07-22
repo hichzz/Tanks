@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using Tanks.Models;
 
 namespace Tanks
 {
     public class GameDirector
     {
+        private const int CountDirections = 4;
+
         public delegate void GameOverHandler();
         public event GameOverHandler GameOverNotify;
 
         public delegate void GameScoreChangeHandler();
         public event GameScoreChangeHandler GameScoreChanged;
 
-        private void TryToEat(Field field, List<FieldObject> intersectsFieldObjects)
+        private void TryEat(Field field, List<FieldObject> intersectsFieldObjects)
         {
             foreach (FieldObject fieldObject in intersectsFieldObjects)
                 if (fieldObject.ObjectType == FieldObjectType.Apple)
@@ -26,7 +25,7 @@ namespace Tanks
 
         private void ConsumeApple(FieldObject apple, Field field)
         {
-            Random random = new Random();
+            Random random = new Random(); 
             field.GenerateNewRandomObject(FieldObjectType.Apple, random);
 
             field.Grounds.Add(apple);
@@ -80,31 +79,18 @@ namespace Tanks
             {
                 foreach (FieldObject fieldObject in intersectsFieldObjects)
                 {
-                    if (fieldObject.ObjectType == FieldObjectType.Tank || fieldObject.ObjectType == FieldObjectType.Bullet)
+                    if (fieldObject.ObjectType == FieldObjectType.Tank 
+                        || fieldObject.ObjectType == FieldObjectType.Bullet)
                         return true;
                 }
             }
             return false;
         }
 
-        private bool IsDestroyObject(List<FieldObject> intersectsFieldObjects)
-        {
-            if (intersectsFieldObjects.Count > 0)
-            {
-                foreach (FieldObject fieldObject in intersectsFieldObjects)
-                {
-                    if (fieldObject.ObjectType == FieldObjectType.Bullet)
-                    {
-                        Bullet bullet = (Bullet)fieldObject;
-                        if (bullet.IsKolobokBullet)
-                            return true;
-                        else
-                            return false;
-                    }
-                }
-            }
-            return false;
-        }
+        private bool IsDestroyObject(List<FieldObject> intersectsFieldObjects) => 
+            intersectsFieldObjects.Count > 0 
+            && intersectsFieldObjects.OfType<Bullet>().Any(b => b.IsKolobokBullet);
+
         private void ReversTank(Tank tank)
         {
             switch (tank.Direction)
@@ -132,16 +118,133 @@ namespace Tanks
             movingObject.Position = fieldObject.Position;
         }
 
+        private bool IsProbabilityChangeDirection(Random random) => random.Next(0, 9) <= 2;
+
         public void ChangeDirectionTank(Tank tank, Random random)
         {
-            if (random.Next(0, 9) <= 2)
-                tank.Direction = (Direction)random.Next(0, 4);
+            if (IsProbabilityChangeDirection(random))
+                tank.Direction = (Direction)random.Next(0, CountDirections);
+        }
+
+        private List<FieldObject> GetIntersectKolobokObjects(Field field, Rectangle nextPoint)
+        {
+            List<FieldObject> intersectsFieldObjects = new List<FieldObject>();
+
+            IEnumerable<FieldObject> intersectedTanks = field.Tanks
+                .Where(t => t.HitBox.IntersectsWith(nextPoint));
+
+            IEnumerable<FieldObject> intersectedBullets = field.Bullets
+                .Where(o => o.HitBox.IntersectsWith(nextPoint))
+                .Where(o => !o.IsKolobokBullet);
+
+            intersectsFieldObjects.AddRange(intersectedTanks);
+            intersectsFieldObjects.AddRange(intersectedBullets);
+
+            return intersectsFieldObjects;
+        }
+
+        private List<FieldObject> GetIntersectedTankObjects(MovingObject movingObject, Field field, Rectangle nextPoint)
+        {
+            List<FieldObject> intersectsFieldObjects = new List<FieldObject>();
+
+            List<Tank> otherTanks = new List<Tank>();
+            otherTanks.AddRange(field.Tanks);
+            otherTanks.Remove((Tank)movingObject);
+
+            IEnumerable<FieldObject> intersectedTanks = otherTanks
+                .Where(o => o.HitBox.IntersectsWith(nextPoint));
+
+            IEnumerable<FieldObject> intersectedBullets = field.Bullets
+                .Where(o => o.HitBox.IntersectsWith(nextPoint))
+                .Where(o => o.IsKolobokBullet);
+
+            intersectsFieldObjects.AddRange(intersectedTanks);
+            intersectsFieldObjects.AddRange(intersectedBullets);
+
+            return intersectsFieldObjects;
+        }
+
+        private void MoveBehavior(MovingObject movingObject, Field field, List<FieldObject> collisions)
+        {
+            switch (movingObject.ObjectType)
+            {
+                case FieldObjectType.Kolobok:
+                    MoveObject(movingObject);
+                    TryEat(field, collisions);
+                    break;
+                case FieldObjectType.Tank:
+                case FieldObjectType.Bullet:
+                    MoveObject(movingObject);
+                    break;
+            }
+        }
+
+        private void CollisionBehavior(MovingObject movingObject, Field field, Rectangle nextPoint, List<FieldObject> collisions)
+        {
+            bool isTankOrBulletCollision = IsTankOrBulletCollision(collisions);
+            bool isShootable = collisions.All(o => o.IsShootable());
+
+            switch (movingObject.ObjectType)
+            {
+                case FieldObjectType.Kolobok:
+                    if (isTankOrBulletCollision)
+                        GameOverNotify();
+                    break;
+
+                case FieldObjectType.Tank:
+                    TankCollisionBehavior(movingObject, field, collisions, isTankOrBulletCollision);
+                    break;
+
+                case FieldObjectType.Bullet:
+                    BulletCollisionBehavior(movingObject, field, nextPoint, isShootable);
+                    break;
+            }
+        }
+
+        private void BulletCollisionBehavior(MovingObject movingObject, Field field, Rectangle nextPoint, bool isShootable)
+        {
+            if (isShootable && !IsBorder(field, nextPoint))
+                MoveObject(movingObject);
+            else
+                field.HitsBullets.Add((Bullet)movingObject);
+        }
+
+        private void TankCollisionBehavior(MovingObject movingObject, Field field, List<FieldObject> collisions, bool isTankOrBulletCollision)
+        {
+            if (isTankOrBulletCollision)
+            {
+                if (IsDestroyObject(collisions))
+                {
+                    ChangeTankLocation(movingObject, field);
+                }
+                else
+                {
+                    ReversTank((Tank)movingObject);
+                }
+            }
+            else
+            {
+                ChangeDirectionTank((Tank)movingObject, new Random());
+            }
         }
 
         public void MoveTanks(Field field)
         {
             foreach (Tank tank in field.Tanks)
                 Move(tank, field);
+        }
+
+        public void HandleTanks(Field field, int countTimer, Random random)
+        {
+            MoveTanks(field);
+
+            if (countTimer % Tank.ChangeDirectionDelay == 0)
+                foreach (Tank tank in field.Tanks)
+                    ChangeDirectionTank(tank, random);
+
+            if (countTimer % Bullet.CreateBulletDelay == 0)
+                foreach (Tank tank in field.Tanks)
+                    CreateBullet(tank, field);
         }
 
         public void MoveObject(MovingObject movingObject)
@@ -170,30 +273,18 @@ namespace Tanks
             switch (movingObject.ObjectType)
             {
                 case FieldObjectType.Kolobok:
-                    intersectsFieldObjects.AddRange(field.Tanks
-                        .Where(o => o.HitBox.IntersectsWith(nextPoint)));
-
-                    intersectsFieldObjects.AddRange(field.Bullets
-                        .Where(o => o.HitBox.IntersectsWith(nextPoint))
-                        .Where(o => !o.IsKolobokBullet));
-
+                    intersectsFieldObjects.AddRange(GetIntersectKolobokObjects(field, nextPoint));
                     break;
+
                 case FieldObjectType.Tank:
-                    List<Tank> neededTanks = new List<Tank>();
-                    neededTanks.AddRange(field.Tanks);
-                    neededTanks.Remove((Tank)movingObject);
-
-                    intersectsFieldObjects.AddRange(neededTanks
-                        .Where(o => o.HitBox.IntersectsWith(nextPoint)));
-
-                    intersectsFieldObjects.AddRange(field.Bullets
-                        .Where(o => o.HitBox.IntersectsWith(nextPoint))
-                        .Where(o => o.IsKolobokBullet));
+                    intersectsFieldObjects.AddRange(GetIntersectedTankObjects(movingObject, field, nextPoint));
                     break;
             }
 
             return intersectsFieldObjects;
         }
+
+
 
         public void Move(MovingObject movingObject, Field field)
         {
@@ -201,63 +292,12 @@ namespace Tanks
 
             List<FieldObject> collisions = GetCollision(movingObject, field, nextPoint);
 
-            bool isTankOrBulletCollision = IsTankOrBulletCollision(collisions);
             bool isPassable = collisions.All(o => o.IsPassable());
-            bool isShootable = collisions.All(o => o.IsShootable());
 
             if (isPassable && !IsBorder(field, nextPoint))
-            {
-                switch (movingObject.ObjectType)
-                {
-                    case FieldObjectType.Kolobok:
-                        MoveObject(movingObject);
-                        TryToEat(field, collisions);
-                        break;
-                    case FieldObjectType.Tank:
-                    case FieldObjectType.Bullet:
-                        MoveObject(movingObject);
-                        break;
-                }
-            }
+                MoveBehavior(movingObject, field, collisions);
             else
-            {
-                switch(movingObject.ObjectType)
-                {
-                    case FieldObjectType.Kolobok:
-                        if (isTankOrBulletCollision)
-                        {
-                            GameOverNotify();
-                        }
-                        break;
-                    case FieldObjectType.Tank:
-                        if (isTankOrBulletCollision)
-                        {
-                            if (IsDestroyObject(collisions))
-                            {
-                                ChangeTankLocation(movingObject, field);
-                            }
-                            else
-                            {
-                                ReversTank((Tank)movingObject);
-                            }
-                        }
-                        else
-                        {
-                            ChangeDirectionTank((Tank)movingObject, new Random());
-                        }
-                        break;
-                    case FieldObjectType.Bullet:
-                        if (isShootable && !IsBorder(field, nextPoint))
-                        {
-                            MoveObject(movingObject);
-                        }
-                        else
-                        {
-                            field.HitsBullets.Add((Bullet)movingObject);
-                        }
-                        break;
-                }
-            }
+                CollisionBehavior(movingObject, field, nextPoint, collisions);
         }
 
         public void CreateBullet(MovingObject movingObject, Field field)
@@ -288,10 +328,7 @@ namespace Tanks
 
             bullet.Direction = movingObject.Direction;
 
-            if (movingObject.ObjectType == FieldObjectType.Tank)
-                bullet.IsKolobokBullet = false;
-            else
-                bullet.IsKolobokBullet = true;
+            bullet.IsKolobokBullet = movingObject.ObjectType == FieldObjectType.Kolobok;
 
             field.Bullets.Add(bullet);
         }

@@ -1,38 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tanks.Models;
 
 namespace Tanks.Controllers
 {
-    class FieldCreator
+    public class FieldCreator
     {
-        public FieldCreator()
+        public int Height { get; set; }
+        public int Width { get; set; }
+        public int CountEnemies { get; set; }
+        public int CountApples { get; set; }
+        public int ObjectsSpeed { get; set; }
+        public FieldCreator(string[] args) 
         {
-
-        }
-
-        public Field CreateGameMap(string[] args)
-        {
-            Field field = new Field();
             try
             {
                 if (args.Length == 5)
                 {
-                    field.Width = Convert.ToInt32(args[0]);
-                    field.Height = Convert.ToInt32(args[1]);
-                    field.CountEnemies = Convert.ToInt32(args[2]);
-                    field.CountApples = Convert.ToInt32(args[3]);
-                    field.ObjectsSpeed = Convert.ToInt32(args[4]);
+                    Width = Convert.ToInt32(args[0]);
+                    Height = Convert.ToInt32(args[1]);
+                    CountEnemies = Convert.ToInt32(args[2]);
+                    CountApples = Convert.ToInt32(args[3]);
+                    ObjectsSpeed = Convert.ToInt32(args[4]);
                 }
             }
-            catch
+            catch { }
+        }
+        
+        public Field CreateGameMap()
+        {
+            Field field = new Field
             {
-                //сделать вывод об использовании дефолтных значений
-            }
+                Width = Width,
+                Height = Height,
+                CountEnemies = CountEnemies,
+                CountApples = CountApples,
+                ObjectsSpeed = ObjectsSpeed
+            };
+
             InitFieldGrounds(field);
             FillGameMap(field);
 
@@ -43,7 +47,7 @@ namespace Tanks.Controllers
         {
             field.FieldObjects.Clear();
             FillFieldObjects(FieldObjectType.Wall, Field.DefaultCountWalls, field);
-            FillFieldObjects(FieldObjectType.River, Field.DefaultCountRivers, field); //TODO: temp
+            FillFieldObjects(FieldObjectType.River, Field.DefaultCountRivers, field); 
             FillFieldObjects(FieldObjectType.Apple, field.CountApples, field);
         }
 
@@ -56,7 +60,6 @@ namespace Tanks.Controllers
 
         private void InitFieldGrounds(Field field) 
         {
-            //TODO: может пригодиться для очистки поля
             field.Grounds.Clear(); 
             for (int x = 0; x <= field.Width - FieldObject.DefaultHitBoxWidth; x += FieldObject.DefaultHitBoxWidth)
                 for (int y = 0; y <= field.Height - FieldObject.DefaultHitBoxHeight; y += FieldObject.DefaultHitBoxHeight)

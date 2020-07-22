@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
 using System.Windows.Forms;
 using Tanks.Models;
 using Tanks.Views;
-using System.Diagnostics;
 
 namespace Tanks.Controllers
 {
@@ -23,7 +17,6 @@ namespace Tanks.Controllers
         private GameDirector gameDirector;
         private FieldCreator fieldCreator;
         private Field field;
-        private string[] args;
 
         private MainForm mainForm;
         private Report report;
@@ -39,19 +32,18 @@ namespace Tanks.Controllers
 
         public Kolobok Kolobok;
 
-        public PackmanController(MainForm mainForm, GameDirector gameDirector, string[] args)
-        {
-            fieldCreator = new FieldCreator();
+        public PackmanController(MainForm mainForm, GameDirector gameDirector, FieldCreator fieldCreator)
+        {            
             report = new Report();
 
             random = new Random((int)DateTime.Now.Ticks);
 
+            this.fieldCreator = fieldCreator;
             this.gameDirector = gameDirector;
             this.mainForm = mainForm;
-            this.args = args;
 
             InitHandlers();
-            InitTimers(Convert.ToInt32(args[4]));
+            InitTimers(fieldCreator.ObjectsSpeed);
         }
 
         private void InitTimers(int interval)
@@ -59,7 +51,7 @@ namespace Tanks.Controllers
             InitMoveTimer(interval);
             InitShootTimer(interval);
         }
-
+        
         private void InitMoveTimer(int movingSpeed)
         {
             moveTimer = new System.Windows.Forms.Timer();
@@ -91,15 +83,7 @@ namespace Tanks.Controllers
             countTimer++;
 
             gameDirector.Move(Kolobok, field);
-            gameDirector.MoveTanks(field);
-
-            if (countTimer % Tank.ChangeDirectionDelay == 0)
-                foreach (Tank tank in field.Tanks)
-                    gameDirector.ChangeDirectionTank(tank, random);
-
-            if (countTimer % Bullet.CreateBulletDelay == 0)
-                foreach (Tank tank in field.Tanks)
-                    gameDirector.CreateBullet(tank, field);
+            gameDirector.HandleTanks(field, countTimer, random);
 
             fieldView.UpdateField(bulletView, kolobokView, tankView, mainForm.MapPictureBox);
             report.RefreshData(Kolobok, field);
@@ -150,16 +134,20 @@ namespace Tanks.Controllers
             FieldObject freeCell = field.Grounds.First();
             Kolobok = new Kolobok(freeCell.Position.X, freeCell.Position.Y, FieldObjectType.Kolobok);
             kolobokView = new KolobokView(Kolobok);
-            field.Grounds.RemoveAt(0);
         }
 
         private void CreateTanks()
-        {            
+        {
+            List<FieldObject> freeCells =
+                    field.Grounds.Where(g => g.Position.X != Kolobok.Position.X
+                    && g.Position.Y != Kolobok.Position.Y)
+                    .ToList();
+
             for (int i = 0; i < field.CountEnemies; i++)
             {
-                FieldObject freeCell = field.Grounds[random.Next(field.Grounds.Count)];
-                
-                field.Tanks.Add(new Tank(freeCell.Position.X, freeCell.Position.Y, FieldObjectType.Tank));                
+                FieldObject freeCell = freeCells[random.Next(freeCells.Count)];                
+                field.Tanks.Add(new Tank(freeCell.Position.X, freeCell.Position.Y, FieldObjectType.Tank));
+                freeCells.Remove(freeCell);
             }
             tankView = new TankView(field.Tanks);
         }
@@ -189,7 +177,7 @@ namespace Tanks.Controllers
 
         private void InitGameMap()
         {
-            field = fieldCreator.CreateGameMap(args);
+            field = fieldCreator.CreateGameMap();
             fieldView = new FieldView(field);
             bulletView = new BulletView(field);
 
@@ -197,20 +185,27 @@ namespace Tanks.Controllers
             CreateTanks();
         }
 
-        public void StartGame()
+        private void SubscribeToGameEvents()
         {
-            InitGameMap();
-
             gameDirector.GameOverNotify += gameOverHandler;
             gameDirector.GameScoreChanged += new GameDirector.GameScoreChangeHandler(UpdateGameScore);
+        }
 
+        private void LoadGameData()
+        {
             fieldView.UpdateField(bulletView, kolobokView, tankView, mainForm.MapPictureBox);
             mainForm.MapPictureBox.Visible = true;
 
-            StartTimers();
-
             report.LoadReportData(Kolobok, field);
             mainForm.Focus();
+        }
+
+        public void StartGame()
+        {
+            InitGameMap();
+            SubscribeToGameEvents();
+            StartTimers();
+            LoadGameData();
         }
     }
 }

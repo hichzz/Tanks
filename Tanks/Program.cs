@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Resources;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Tanks.Controllers;
-using Tanks.Models;
-using Tanks.Views;
 
 namespace Tanks
 {
@@ -20,8 +14,9 @@ namespace Tanks
 
             GameDirector gameDirector = new GameDirector();
             MainForm mainForm = new MainForm();
+            FieldCreator fieldCreator = new FieldCreator(args);
 
-            PackmanController packmanController = new PackmanController(mainForm, gameDirector, args);
+            PackmanController packmanController = new PackmanController(mainForm, gameDirector, fieldCreator); 
 
             Application.Run(mainForm);
         }
